@@ -35,4 +35,34 @@ section.hero{
 
   }
 }
+.btn-primary{
+  background: $pimary;
+  transition: $smooth;
+  &:hover{
+    background: $pimary-hover;
+   
+
+  }
+}
+section.cart{
+  background: $secondry;
+  .amount{
+    color: $pimary;
+  }
+}
+section.login{
+ 
+    background: $secondry;
+    min-height: calc(100vh - 86px);
+    a{
+      color: $pimary;
+      &:hover{
+        color: $pimary-hover;
+       
+    
+      }
+
+    }
+  }
+
   
