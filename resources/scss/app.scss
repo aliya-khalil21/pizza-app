@@ -1,4 +1,6 @@
 @import './variables';
+@import '~noty/src/noty.scss';
+@import '~noty/src/themes/mint.scss'; 
 .body{
   font-family: 'lato',sans-serif;
   -webkit-foont-smoothing:'antialiased';
@@ -32,8 +34,12 @@ section.hero{
     background-color: $pimary;
     border-color: $Pure;
     color: $Pure;
+    
 
   }
+  &:focus(
+    outline: none;
+  )
 }
 .btn-primary{
   background: $pimary;
@@ -63,6 +69,10 @@ section.login{
       }
 
     }
+  }
+  .noty_themes_mint{
+    border-radius: 50px!important;
+    padding-left: 8px!important;
   }
 
   
