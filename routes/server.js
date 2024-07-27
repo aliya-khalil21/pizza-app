@@ -12,17 +12,18 @@ const passport = require('passport');
 const Emitter = require('events');
 
 // Database connection
-const url = 'mongodb://localhost/pizza';
+const url = process.env.MONGO_CONNECTION_URL;
+console.log('MongoDB connection string:', url); // Log to verify the connection string
 mongoose.connect(url, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => {
-    console.log('Database connected...');
-  })
-  .catch(err => {
-    console.error('Connection failed...', err);
-  });
+.then(() => {
+  console.log('Database connected...');
+})
+.catch(err => {
+  console.error('Connection failed...', err);
+});
 
 const connection = mongoose.connection;
 connection.once('open', () => {
@@ -73,6 +74,9 @@ app.use((req, res, next) => {
 
 // Routes
 const initRoutes = require('./web'); // Adjust the path according to your project structure
+app.use((req,res)=>{
+   res.status(404).render('errors/404')
+})
 
 // Initialize routes
 initRoutes(app);
@@ -85,22 +89,17 @@ const server = app.listen(PORT, () => {
 const io = require('socket.io')(server);
 
 io.on('connection', (socket) => {
-    console.log('New client connected');
-    socket.on('join', (orderId) => {
-        socket.join(orderId);
-    });
+  console.log('New client connected');
+  socket.on('join', (orderId) => {
+    socket.join(orderId);
+  });
 });
 
 eventEmitter.on('orderUpdated', (data) => {
-    io.to(`order_${data.id}`).emit('orderUpdated', data);
+  io.to(`order_${data.id}`).emit('orderUpdated', data);
 });
 
 eventEmitter.on('orderPlaced', (data) => {
-    console.log('Order Placed Event Emitted:', data); // Add this log
-    io.to('adminRoom').emit('orderPlaced', data);
+  console.log('Order Placed Event Emitted:', data); // Add this log
+  io.to('adminRoom').emit('orderPlaced', data);
 });
-
-
-
-
-
