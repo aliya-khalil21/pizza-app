@@ -9,6 +9,7 @@ const session = require('express-session');
 const flash = require('express-flash');
 const MongoStore = require('connect-mongo');
 const passport = require('passport');
+const Emitter = require('events');
 
 // Database connection
 const url = 'mongodb://localhost/pizza';
@@ -28,7 +29,9 @@ connection.once('open', () => {
   console.log('Database connected...');
 });
 
-
+// Event emitter
+const eventEmitter = new Emitter();
+app.set('eventEmitter', eventEmitter);
 
 // Configure sessions
 app.use(session({
@@ -38,13 +41,13 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: url, collectionName: 'sessions' }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
- // Passport config
+
+// Passport config
 const passportInit = require('../app/config/passport');
 passportInit(passport);
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 // Flash middleware
 app.use(flash());
@@ -62,7 +65,6 @@ app.set('views', path.join(__dirname, '../resources/views'));
 app.set('view engine', 'ejs');
 
 // Global middleware
-
 app.use((req, res, next) => {
   res.locals.session = req.session;
   res.locals.user = req.user;
@@ -75,7 +77,30 @@ const initRoutes = require('./web'); // Adjust the path according to your projec
 // Initialize routes
 initRoutes(app);
 
-const PORT1 = process.env.PORT || 3000;
-app.listen(PORT1, () => {
-    console.log(`Server is running on port ${PORT1}`);
+// Socket.io setup
+const server = app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
 });
+
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => {
+    console.log('New client connected');
+    socket.on('join', (orderId) => {
+        socket.join(orderId);
+    });
+});
+
+eventEmitter.on('orderUpdated', (data) => {
+    io.to(`order_${data.id}`).emit('orderUpdated', data);
+});
+
+eventEmitter.on('orderPlaced', (data) => {
+    console.log('Order Placed Event Emitted:', data); // Add this log
+    io.to('adminRoom').emit('orderPlaced', data);
+});
+
+
+
+
+

@@ -1,12 +1,11 @@
+// user.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },  // Change Number to String for hashed password
-    role: { type: String, default: 'customer' }
-}, { timestamps: true });
+    password: { type: String, required: true },
+    role: { type: String, default: 'customer' } // Add role field with default value
+});
 
-const User = mongoose.model('User', userSchema);  // Change Menu to User
-module.exports = User;  // Change Menu to User
+const User = mongoose.model('User', userSchema);
+module.exports = User;

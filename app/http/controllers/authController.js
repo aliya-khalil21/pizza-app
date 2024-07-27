@@ -1,45 +1,50 @@
-const passport = require('passport');
+const passport = require('passport'); // Add this line to import passport
 const User = require('../../models/user');
 const bcrypt = require('bcrypt');
-
 function authController() {
+    const _getRedirectUrl = (req) => {
+        console.log('User role:', req.user.role); // Debug log
+        return req.user.role === 'admin' ? '/admin/orders' : '/customer/orders';
+    }
+
     return {
         login(req, res) {
             res.render('auth/login');
         },
         postlogin(req, res, next) {
             const { email, password } = req.body;
-        
+
             // Validate request
-            if (!email || !password) {  
+            if (!email || !password) {
                 req.flash('error', 'All fields are required');
                 return res.redirect('/login');
             }
-           
+
             passport.authenticate('local', (err, user, info) => {
                 if (err) {
                     console.log('Error during authentication:', err);
                     req.flash('error', info.message);
                     return next(err);
                 }
-                
+
                 if (!user) {
                     console.log('No user found or incorrect credentials');
                     req.flash('error', info.message);
                     return res.redirect('/login');
                 }
-        
+
                 req.logIn(user, (err) => {
                     if (err) {
                         console.log('Error during login:', err);
                         req.flash('error', info.message);
                         return next(err);
                     }
-                    return res.redirect('/');
+
+                    console.log('User logged in successfully');
+                    return res.redirect(_getRedirectUrl(req));
                 });
             })(req, res, next);
-        }
-         ,
+        },
         register(req, res) {
             res.render('auth/register');
         },
@@ -56,7 +61,7 @@ function authController() {
 
             try {
                 // Check if email exists
-                const existingUser = await User.findOne({ email: email });
+                const existingUser = await User.findOne({ email });
                 if (existingUser) {
                     req.flash('error', 'Email already taken');
                     req.flash('name', name);
@@ -71,14 +76,12 @@ function authController() {
                 const user = new User({
                     name,
                     email,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    role: 'customer' // Default role, adjust if needed
                 });
 
-                user.save().then((user)=>{
-                    return res.redirect('/')
-                });
-                // Redirect to home page after successful registration
-               
+                await user.save();
+                return res.redirect('/');
             } catch (err) {
                 console.error(err);
                 req.flash('error', 'Something went wrong');
@@ -86,14 +89,14 @@ function authController() {
             }
         },
         logout(req, res) {
-            req.logout((err) => { // Add the callback function
-              if (err) {
-                console.error(err); // Log the error for debugging
-                return res.redirect('/login'); // Redirect even on error (optional)
-              }
-              res.redirect('/login'); // Redirect after successful logout
+            req.logout((err) => {
+                if (err) {
+                    console.error(err); // Log the error for debugging
+                    return res.redirect('/login'); // Redirect even on error (optional)
+                }
+                res.redirect('/login'); // Redirect after successful logout
             });
-          }
+        }
     }
 }
 
