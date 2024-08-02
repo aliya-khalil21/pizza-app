@@ -13,6 +13,7 @@ const Emitter = require('events');
 
 // Database connection
 const url = process.env.MONGO_CONNECTION_URL;
+//const url = 'mongodb://localhost/pizza';
 console.log('MongoDB connection string:', url); // Log to verify the connection string
 mongoose.connect(url, {
   useNewUrlParser: true,
@@ -74,9 +75,9 @@ app.use((req, res, next) => {
 
 // Routes
 const initRoutes = require('./web'); // Adjust the path according to your project structure
-app.use((req,res)=>{
-   res.status(404).render('errors/404')
-})
+//app.use((req,res)=>{
+  // res.status(404).render('errors/404')
+//})
 
 // Initialize routes
 initRoutes(app);

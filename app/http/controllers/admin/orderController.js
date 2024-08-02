@@ -1,4 +1,8 @@
-const Order = require('../../../models/order');
+const path = require('path');
+console.log('Resolved path to order model:', path.resolve(__dirname, '../../models/order'));
+
+const Order = require('../../../models/order')
+
 
 function orderController() {
     return {
